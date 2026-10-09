@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Control de Estudiantes del Centro Escolar",
+  "short_name": "Control Escolar",
+  "description": "Matrícula y asistencia del NER Nueva Alianza",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#12345b",
+  "icons": [
+    {
+      "src": "./icono-control-escolar.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
