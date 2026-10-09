@@ -1,4 +1,4 @@
-const CACHE_NAME = "control-escolar-shell-v1";
+const CACHE_NAME = "control-escolar-shell-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icono-control-escolar.svg"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
