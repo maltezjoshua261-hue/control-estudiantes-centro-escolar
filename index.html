@@ -20,6 +20,15 @@
 .module-card .tablewrap{box-shadow:0 2px 10px #00000008}
 @media(max-width:600px){.module-card{padding:14px}.module-nav{grid-template-columns:1fr 1fr}.module-link{padding:11px;gap:8px;min-height:70px}.module-icon{flex-basis:34px;height:34px;font-size:18px}}
 
+
+/* Vista organizada: mostrar un módulo a la vez y conservar accesos en cuadrícula */
+.module-nav{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+.module-link{height:100%;min-width:0}
+.module-link:focus-visible{outline:3px solid #7aa7df;outline-offset:2px}
+.module-link[aria-current="page"]{border-color:#12345b;background:#eef4fb;box-shadow:0 0 0 2px #12345b18}
+@media(max-width:900px){.module-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.module-nav{grid-template-columns:1fr}}
+
 </style><link rel="manifest" href="./manifest.webmanifest"><meta name="theme-color" content="#12345b"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Control Escolar"></head><body>
 <div id="loginView" class="login"><div class="card"><h1>CONTROL DE ESTUDIANTES</h1><p class="muted">Centro Escolar · Acceso seguro</p><form id="loginForm"><label>Usuario / código</label><input id="codigo" autocomplete="username" required="" placeholder="Ej. Evert o código del centro"><label>Contraseña</label><input id="password" type="password" autocomplete="current-password" required=""><button id="loginBtn">Ingresar</button><div id="loginError" class="error"></div></form></div></div>
 <div id="appView" class="hidden"><header class="top"><div class="brand">CONTROL DE ESTUDIANTES DEL CENTRO ESCOLAR</div><button id="logoutBtn" class="logout">Cerrar sesión</button></header><main class="wrap"><div id="welcome"></div><div class="grid section"><div class="stat"><div class="muted">Rol</div><div id="role" class="num">—</div></div><div class="stat"><div class="muted">Centro</div><div id="centerName" class="num" style="font-size:20px">—</div></div><div class="stat"><div class="muted">Estudiantes visibles</div><div id="studentCount" class="num">0</div></div><div class="stat"><div class="muted">Asistencias registradas</div><div id="attendanceCount" class="num">0</div></div></div>
@@ -280,5 +289,47 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
+<script>
+/* Navegación visual; no cambia ni guarda datos del sistema. */
+(function(){
+  const sectionIds = ["studentsSection","attendanceSection","qrSection","reportSection","monthlySection","enrollmentAttendanceSection"];
+  function setupModuleNavigation(){
+    const nav = document.querySelector(".module-nav");
+    if(!nav) return;
+    const links = Array.from(nav.querySelectorAll("a.module-link"));
+    const sections = sectionIds.map(id=>document.getElementById(id)).filter(Boolean);
+    function showSection(id, updateHash){
+      const target = document.getElementById(id);
+      if(!target || !sections.includes(target)) return;
+      sections.forEach(section=>section.classList.toggle("hidden", section!==target));
+      links.forEach(link=>{
+        const active = link.getAttribute("href")==="#"+id;
+        if(active) link.setAttribute("aria-current","page");
+        else link.removeAttribute("aria-current");
+      });
+      if(updateHash) history.replaceState(null,"","#"+id);
+      target.scrollIntoView({behavior:"smooth",block:"start"});
+    }
+    links.forEach(link=>link.addEventListener("click",event=>{
+      const id=(link.getAttribute("href")||"").slice(1);
+      if(!sections.some(section=>section.id===id)) return;
+      event.preventDefault();
+      showSection(id,true);
+    }));
+    const initialId=sectionIds.includes(location.hash.slice(1))?location.hash.slice(1):"studentsSection";
+    showSection(initialId,false);
+    const observer=new MutationObserver(()=>{
+      if(document.getElementById("appView")?.classList.contains("hidden")) return;
+      if(!sections.some(section=>!section.classList.contains("hidden"))) showSection("studentsSection",false);
+    });
+    const app=document.getElementById("appView");
+    if(app) observer.observe(app,{attributes:true,attributeFilter:["class"]});
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",setupModuleNavigation);
+  else setupModuleNavigation();
+})();
+</script>
+
 </body></html>
 
